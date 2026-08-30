@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# caches (downloaded source datasets live here, never commit)
+.cache/
+
+# local tooling (agent skills, not part of the product)
+.skills/
+
+# env
+.env
+.env.*
+!.env.example
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# rust
+target/
+
+# tauri
+src-tauri/gen/
+
+# android
+apps/android/.gradle/
+apps/android/build/
+apps/android/local.properties
+apps/android/app/build/
+*.apk.idsig
+
+# per-app build outputs (packages/data/dist IS committed intentionally)
+apps/web/dist/
+apps/desktop/dist/
