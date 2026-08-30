@@ -13,7 +13,7 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.clickable
+import androidx.glance.appwidget.clickable
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -33,6 +33,9 @@ import com.lexfield.app.data.VocabEntry
 import com.lexfield.app.fsrs.CardState
 import com.lexfield.app.fsrs.Tier
 import kotlin.random.Random
+
+/** Glance's ColorProvider takes day + night; this widget is always dark */
+private fun color(c: Color) = ColorProvider(c, c)
 
 /** Endfield palette for the widget surface */
 private object WidgetColors {
@@ -69,14 +72,14 @@ object WidgetWordSource {
         val rng = Random(seed)
 
         val cards = store.allCards().filter { it.senseIdx == null && !it.suspended }
-        val byWord = cards.associateBy { it.w }
+        val byWord = cards.associateBy { it.word }
 
         val hardOrLapsed = cards
             .filter { it.tier == Tier.HARD || it.lapses >= 1 }
-            .mapNotNull { vocab.byWord(it.w) }
+            .mapNotNull { vocab.byWord(it.word) }
         val inStudy = cards
             .filter { it.state != CardState.NEW }
-            .mapNotNull { vocab.byWord(it.w) }
+            .mapNotNull { vocab.byWord(it.word) }
 
         val (pool, reason) = when {
             hardOrLapsed.isNotEmpty() -> hardOrLapsed to "困难/易错"
@@ -102,7 +105,7 @@ private fun WidgetContent(data: WidgetWord) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(WidgetColors.Ink))
+            .background(color(WidgetColors.Ink))
             .cornerRadius(14.dp)
             .padding(horizontal = 14.dp, vertical = 10.dp)
             .clickable(actionStartActivity<MainActivity>()),
@@ -114,7 +117,7 @@ private fun WidgetContent(data: WidgetWord) {
                 style = TextStyle(
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Normal,
-                    color = ColorProvider(WidgetColors.PaperMuted),
+                    color = color(WidgetColors.PaperMuted),
                 ),
                 maxLines = 1,
             )
@@ -124,7 +127,7 @@ private fun WidgetContent(data: WidgetWord) {
             Text(
                 text = data.entry.s.take(2)
                     .joinToString(";") { s -> if (s.pos.isNotEmpty()) "${s.pos} ${s.cn}" else s.cn },
-                style = TextStyle(fontSize = 11.sp, color = ColorProvider(WidgetColors.Paper)),
+                style = TextStyle(fontSize = 11.sp, color = color(WidgetColors.Paper)),
                 maxLines = 2,
             )
         }
@@ -139,7 +142,7 @@ private fun Row1(entry: VocabEntry) {
             style = TextStyle(
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                color = ColorProvider(WidgetColors.Signal),
+                color = color(WidgetColors.Signal),
             ),
             maxLines = 1,
         )
@@ -147,7 +150,7 @@ private fun Row1(entry: VocabEntry) {
             Spacer(GlanceModifier.width(6.dp))
             Text(
                 text = "/${entry.p}/",
-                style = TextStyle(fontSize = 10.sp, color = ColorProvider(WidgetColors.PaperMuted)),
+                style = TextStyle(fontSize = 10.sp, color = color(WidgetColors.PaperMuted)),
                 maxLines = 1,
             )
         }
