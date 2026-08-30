@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.glance.appwidget.updateAll
 import com.lexfield.app.data.Settings
 import com.lexfield.app.net.SyncApi
 import kotlinx.coroutines.CoroutineScope
