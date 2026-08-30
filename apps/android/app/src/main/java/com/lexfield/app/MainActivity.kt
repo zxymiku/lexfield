@@ -5,6 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.lexfield.app.data.Settings
 import com.lexfield.app.data.Store
 import com.lexfield.app.data.Vocab
@@ -58,6 +65,14 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // targetSdk 35 enforces edge-to-edge on Android 15+: draw under system
+        // bars ourselves and pad content with safeDrawing insets (see AppRoot)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            // dark surfaces -> light (paper) status bar / nav bar icons
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
         val vocab = Vocab.load(this)
         val store = Store(this)
 
@@ -82,7 +97,17 @@ private fun AppRoot(vocab: Vocab, store: Store, scope: CoroutineScope) {
         SessionRunner(store, vocab, settings)
     }
 
-    Surface(Modifier.fillMaxSize()) {
+    Surface(
+        Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(
+                    WindowInsetsSides.Horizontal + WindowInsetsSides.Vertical,
+                ),
+            )
+            // with edge-to-edge, adjustResize no longer resizes: pad by IME ourselves
+            .imePadding()
+    ) {
         when (screen) {
             Screen.TODAY -> TodayScreen(counts, settings) { screen = it }
             Screen.LEARN -> SessionScreen("learn", vocab, store, runner, settings, scope, { revision++ }) { screen = Screen.TODAY }
