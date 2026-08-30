@@ -1,0 +1,101 @@
+/* ==========================================================================
+   LexField design tokens - family: ENDFIELD (pale paper / charcoal / signal)
+   Source: ark-ui skill evidence (design-language.md, recipes.md, tokens)
+   Family variables own ink/paper/signal/type/geometry character.
+   Depth variables own layer visibility, instrumentation and motion budgets.
+   ========================================================================== */
+
+:root,
+[data-ark-theme='endfield'] {
+  color-scheme: light;
+
+  /* ink & paper */
+  --ark-ink: #191919;
+  --ark-ink-soft: #40403e;
+  --ark-paper: #f2f2f0;
+  --ark-paper-dim: #e7e7e3;
+  --ark-paper-deep: #dcdcd8;
+
+  /* signal & state */
+  --ark-signal: #fffa00;
+  --ark-signal-dim: #e8e000;
+  --ark-state: #00ffa2; /* verified / online ONLY */
+
+  /* surfaces */
+  --ark-panel: rgba(25, 25, 25, 0.92);
+  --ark-panel-soft: rgba(25, 25, 25, 0.78);
+  --ark-panel-inverse: rgba(242, 242, 240, 0.6);
+
+  /* rules (1px grammar) */
+  --ark-rule: rgba(25, 25, 25, 0.16);
+  --ark-rule-strong: rgba(25, 25, 25, 0.45);
+  --ark-rule-inverse: rgba(242, 242, 240, 0.22);
+  --ark-rule-inverse-strong: rgba(242, 242, 240, 0.5);
+
+  /* text on dark panels */
+  --ark-on-panel: #f2f2f0;
+  --ark-on-panel-muted: rgba(242, 242, 240, 0.62);
+
+  --ark-muted: #85857f;
+  --ark-radius: 2px;
+
+  /* type (safe stacks; apps may bundle OFL faces and override) */
+  --ark-font-cjk: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', sans-serif;
+  --ark-font-display: 'Roboto Condensed', 'Arial Narrow', 'DIN Condensed', var(--ark-font-cjk);
+  --ark-font-technical: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
+  --ark-font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+  /* motion */
+  --ark-direct: 240ms;
+  --ark-reveal: 650ms;
+  --ark-attention: 1800ms;
+  --ark-ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --ark-motion-mult: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Depth axes - keep family and depth independent.
+   Components gate decoration via these so depth is switchable per <html>.
+   -------------------------------------------------------------------------- */
+
+[data-ark-theme='endfield'][data-ark-depth='minimal'] {
+  --ark-layer-grid: 0;
+  --ark-layer-scale: 0;
+  --ark-layer-sector: 0;
+  --ark-layer-numerals: 0;
+  --ark-layer-brackets: 0;
+  --ark-choreography: 0;
+}
+
+[data-ark-theme='endfield'][data-ark-depth='moderate'] {
+  --ark-layer-grid: 1;
+  --ark-layer-scale: 0;
+  --ark-layer-sector: 0;
+  --ark-layer-numerals: 0;
+  --ark-layer-brackets: 0;
+  --ark-choreography: 0;
+}
+
+[data-ark-theme='endfield'][data-ark-depth='complex'] {
+  --ark-layer-grid: 1;
+  --ark-layer-scale: 1;
+  --ark-layer-sector: 0;
+  --ark-layer-numerals: 1;
+  --ark-layer-brackets: 1;
+  --ark-choreography: 0;
+}
+
+[data-ark-theme='endfield'][data-ark-depth='maximal'] {
+  --ark-layer-grid: 1;
+  --ark-layer-scale: 1;
+  --ark-layer-sector: 1;
+  --ark-layer-numerals: 1;
+  --ark-layer-brackets: 1;
+  --ark-choreography: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ark-motion-mult: 0;
+  }
+}
