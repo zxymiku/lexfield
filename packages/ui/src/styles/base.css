@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Base - reset, typography, focus, selection, a11y helpers
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--ark-paper);
+  color: var(--ark-ink);
+  font-family: var(--ark-font-cjk);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--ark-font-display);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* display titles are tight; CJK body stays open */
+:lang(zh) h1,
+:lang(zh) h2 {
+  letter-spacing: 0;
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--ark-font-mono);
+  font-size: 0.92em;
+}
+
+/* numerals in data positions are always tabular */
+.ark-num,
+time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   focus - visible everywhere, 2px signal outline with offset
+   -------------------------------------------------------------------------- */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ark-signal-dim);
+  outline-offset: 2px;
+}
+
+.ark-on-dark :focus-visible,
+[data-tone='dark'] :focus-visible {
+  outline-color: var(--ark-signal);
+}
+
+::selection {
+  background: var(--ark-signal);
+  color: var(--ark-ink);
+}
+
+/* --------------------------------------------------------------------------
+   scrollbars - thin charcoal rails
+   -------------------------------------------------------------------------- */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ark-rule-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--ark-rule-strong);
+  border-radius: 0;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   micro-label (bilingual: zh primary + en uppercase micro)
+   -------------------------------------------------------------------------- */
+
+.ark-eyebrow {
+  font-family: var(--ark-font-technical);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ark-muted);
+}
+
+.ark-eyebrow--inverse {
+  color: var(--ark-on-panel-muted);
+}
+
+/* visually hidden (screen readers only) */
+.ark-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* reduced motion: kill every animation/transition, keep states readable */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
