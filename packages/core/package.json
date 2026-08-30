@@ -1,0 +1,19 @@
+{
+  "name": "@lexfield/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Domain core: FSRS-6 scheduling wrapper, question engine, session queue, storage adapter contract, sync client",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ts-fsrs": "^5.4.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
