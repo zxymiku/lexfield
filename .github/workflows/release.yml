@@ -7,6 +7,11 @@ on:
         description: "Release tag (e.g. v0.1.0)"
         required: true
 
+# a release build is heavy; queue manual triggers instead of running them in parallel
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

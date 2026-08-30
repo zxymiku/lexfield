@@ -22,7 +22,6 @@ pub struct VocabEntry {
 
 #[derive(Deserialize)]
 pub struct VocabFile {
-    pub n: usize,
     pub words: Vec<VocabEntry>,
 }
 
@@ -50,10 +49,6 @@ impl Vocab {
 
     pub fn all(&self) -> &[VocabEntry] {
         &self.entries
-    }
-
-    pub fn by_word(&self, w: &str) -> Option<&VocabEntry> {
-        self.index.get(w).map(|&i| &self.entries[i])
     }
 
     pub fn index_of(&self, w: &str) -> Option<usize> {

@@ -4,7 +4,7 @@ mod store;
 mod sync;
 mod vocab;
 
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 use store::{AppSettings, CardState, Store, DAY_MS};
 use vocab::Vocab;
 
@@ -13,23 +13,6 @@ use vocab::Vocab;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
-}
-
-#[derive(Clone, Copy, ValueEnum)]
-enum Mode {
-    Learn,
-    Review,
-    Mix,
-}
-
-impl Mode {
-    fn as_str(&self) -> &'static str {
-        match self {
-            Mode::Learn => "learn",
-            Mode::Review => "review",
-            Mode::Mix => "mix",
-        }
-    }
 }
 
 #[derive(Subcommand)]
@@ -178,7 +161,7 @@ fn run(cli: Cli) -> anyhow::Result<()> {
             let mut applied = 0usize;
             let local = store.all_cards();
             for raw_card in payload.get("cards").and_then(|v| v.as_array()).cloned().unwrap_or_default() {
-                let mut card: store::Card = serde_json::from_value(raw_card)?;
+                let card: store::Card = serde_json::from_value(raw_card)?;
                 if let Some(existing) = local.iter().find(|c| c.key() == card.key()) {
                     if card.updated_at <= existing.updated_at {
                         continue;

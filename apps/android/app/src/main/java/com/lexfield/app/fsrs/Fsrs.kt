@@ -30,8 +30,8 @@ object FsrsParams {
         0.7317, 0.5279, 0.1608,
     )
 
-    const val LEARNING_STEPS_MINUTES = longArrayOf(1, 10)
-    const val RELEARNING_STEPS_MINUTES = longArrayOf(10)
+    val LEARNING_STEPS_MINUTES = longArrayOf(1, 10)
+    val RELEARNING_STEPS_MINUTES = longArrayOf(10)
 }
 
 enum class Rating(val v: Int) { AGAIN(1), HARD(2), GOOD(3), EASY(4) }

@@ -2,7 +2,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-use crate::vocab::Vocab;
+
 
 pub const DAY_MS: i64 = 86_400_000;
 pub const MINUTE_MS: i64 = 60_000;
@@ -245,10 +245,6 @@ impl Store {
         Ok(())
     }
 
-    pub fn wipe_cards(&self) -> anyhow::Result<()> {
-        self.conn.execute("DELETE FROM cards", [])?;
-        Ok(())
-    }
 }
 
 pub fn start_of_day(now: i64) -> i64 {
@@ -274,8 +270,4 @@ pub fn count_new_today(store: &Store, now: i64) -> u32 {
         }
     }
     words.len() as u32
-}
-
-pub fn vocab_scope(vocab: &Vocab, level_filter: i32) -> Vec<&crate::vocab::VocabEntry> {
-    vocab.all().iter().filter(|e| (e.lv & level_filter) != 0).collect()
 }

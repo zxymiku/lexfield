@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.lexfield.app.fsrs.CardState
+import org.json.JSONArray
 import com.lexfield.app.fsrs.Rating
 import com.lexfield.app.fsrs.Tier
 import org.json.JSONObject

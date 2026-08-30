@@ -20,7 +20,7 @@ pub fn run_session(
     println!("共 {} 项 · 空格 显示释义/继续 · 1-4 评分 · q 退出\n", items.len());
     let mut correct = 0usize;
     let mut done = 0usize;
-    for (n, item) in items.iter().enumerate() {
+    'items: for (n, item) in items.iter().enumerate() {
         let entry = item.entry(vocab);
         println!("┌─ {:02}/{} [{}]", n + 1, items.len(), item.kind().to_uppercase());
         println!("│  {}", entry.w);
@@ -28,27 +28,22 @@ pub fn run_session(
             println!("│  /{}/", p);
         }
         let question = engine::generate_question(item, store, vocab);
-        let mut quit = false;
-        match &question {
-            Question::SelfGrade(_, senses) => {
+            match &question {
+            Question::SelfGrade(senses) => {
                 println!("│  回想词义…");
                 loop {
                     match read_key()? {
                         Key::Quit => {
-                            quit = true;
-                            break;
+                            break 'items;
                         }
                         Key::Other => {
-                            for (i, s) in senses {
+                            for (_i, s) in senses {
                                 let pos = if s.pos.is_empty() { String::new() } else { format!("{} ", s.pos) };
                                 println!("│    ▸ {}{}", pos, s.cn);
                             }
                             break;
                         }
                     }
-                }
-                if quit {
-                    break;
                 }
                 let rating = prompt_grade()?;
                 match rating {
@@ -69,10 +64,7 @@ pub fn run_session(
                         done += 1;
                         after_feedback(store, &entry.w, now_fn());
                     }
-                    None => {
-                        quit = true;
-                        break;
-                    }
+                    None => break 'items,
                 }
             }
             Question::Choice(vi, _, options) => {
@@ -114,10 +106,7 @@ pub fn run_session(
                         done += 1;
                         after_feedback(store, &entry.w, now_fn());
                     }
-                    None => {
-                        quit = true;
-                        break;
-                    }
+                    None => break 'items,
                 }
             }
             Question::Multi(vi, _, options) => {
@@ -174,10 +163,7 @@ pub fn run_session(
                         done += 1;
                         after_feedback(store, &entry.w, now_fn());
                     }
-                    _ => {
-                        quit = true;
-                        break;
-                    }
+                    _ => break 'items,
                 }
             }
         }
@@ -256,12 +242,15 @@ fn prompt_choice(n: usize) -> anyhow::Result<Option<usize>> {
     let out = loop {
         match read()? {
             Event::Key(KeyEvent { code: KeyCode::Char(c), .. }) => {
+                if c == 'q' || c == 'Q' {
+                    break None;
+                }
                 let idx = (c.to_ascii_uppercase() as u8).wrapping_sub(b'A') as usize;
                 if idx < n {
                     break Some(idx);
                 }
             }
-            Event::Key(KeyEvent { code: KeyCode::Char('q') | KeyCode::Esc, .. }) => break None,
+            Event::Key(KeyEvent { code: KeyCode::Esc, .. }) => break None,
             _ => continue,
         }
     };

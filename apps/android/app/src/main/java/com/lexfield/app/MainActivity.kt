@@ -43,6 +43,7 @@ import com.lexfield.app.ui.LexFieldTheme
 import com.lexfield.app.ui.screens.LibraryScreen
 import com.lexfield.app.ui.screens.SessionScreen
 import com.lexfield.app.ui.screens.SettingsScreen
+import kotlin.math.max
 import com.lexfield.app.ui.screens.StatsScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
