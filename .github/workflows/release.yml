@@ -1,11 +1,28 @@
 name: Release (Android / EXE / CLI)
 
+# 计费优化(GitHub Actions:Linux 1x / Windows 2x 分钟,私有仓库按分钟计费):
+# 1. plan 任务先做变更检测——只编译自上个 release tag 以来有改动的产物,可手动覆盖
+# 2. EXE 与 CLI 合并进同一个 Windows 任务,省掉一次 2x 运行器的启动/checkout/工具链开销
+# 3. 所有任务设 timeout 上限,防止异常挂起烧分钟
+# 4. 中间 artifact 保留 1 天(发布后 Release 里已有正式产物,不占存储计费)
+# 5. rust-cache / pnpm 缓存复用,Windows 冷构建 ~20min,命中缓存 ~5-8min
+
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: "Release tag (e.g. v0.1.0)"
         required: true
+      components:
+        description: "构建哪些产物"
+        default: auto
+        type: choice
+        options:
+          - auto
+          - all
+          - android
+          - desktop
+          - cli
 
 # a release build is heavy; queue manual triggers instead of running them in parallel
 concurrency:
@@ -16,9 +33,81 @@ permissions:
   contents: write
 
 jobs:
+  plan:
+    name: Plan (变更检测)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      android: ${{ steps.plan.outputs.android }}
+      desktop: ${{ steps.plan.outputs.desktop }}
+      cli: ${{ steps.plan.outputs.cli }}
+      windows: ${{ steps.plan.outputs.windows }}
+      any: ${{ steps.plan.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: plan
+        env:
+          SELECT: ${{ inputs.components }}
+        run: |
+          set -e
+          set_true() { for k in "$@"; do echo "$k=true" >> "$GITHUB_OUTPUT"; done; }
+
+          if [ "$SELECT" = "all" ]; then
+            set_true android desktop cli windows any
+            exit 0
+          fi
+          if [ "$SELECT" = "android" ] || [ "$SELECT" = "desktop" ] || [ "$SELECT" = "cli" ]; then
+            echo "$SELECT=true" >> "$GITHUB_OUTPUT"
+            echo "any=true" >> "$GITHUB_OUTPUT"
+            # windows runner only spins up when a Windows artifact is actually requested
+            if [ "$SELECT" != "android" ]; then
+              echo "windows=true" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # auto: diff since the last release tag
+          BASE=$(git describe --tags --abbrev=0 2>/dev/null || true)
+          if [ -z "$BASE" ]; then
+            echo "no previous tag -> build all (first release)"
+            set_true android desktop cli windows any
+            exit 0
+          fi
+          git diff --name-only "$BASE"..HEAD > /tmp/files.txt || true
+          echo "changed files since $BASE: $(wc -l < /tmp/files.txt)"
+
+          hit() { grep -qE "$1" /tmp/files.txt; }
+          A=false; D=false; C=false
+          hit '^(apps/android/|packages/data/dist/|\.github/workflows/release\.yml)' && A=true
+          hit '^(apps/desktop/|apps/web/|packages/(core|ui|data)/|pnpm-lock\.yaml|package\.json|tsconfig\.base\.json|\.github/workflows/release\.yml)' && D=true
+          hit '^(apps/cli/|packages/data/dist/|\.github/workflows/release\.yml)' && C=true
+
+          {
+            echo "android=$A"
+            echo "desktop=$D"
+            echo "cli=$C"
+            if [ "$A" = true ] || [ "$D" = true ] || [ "$C" = true ]; then
+              echo "windows=true"
+              echo "any=true"
+            else
+              echo "windows=false"
+              echo "any=false"
+            fi
+          } >> "$GITHUB_OUTPUT"
+      - name: Report plan
+        run: |
+          echo "android  = ${{ steps.plan.outputs.android }}"
+          echo "desktop  = ${{ steps.plan.outputs.desktop }}"
+          echo "cli      = ${{ steps.plan.outputs.cli }}"
+
   android:
     name: Android APK
+    needs: plan
+    if: needs.plan.outputs.android == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -40,10 +129,14 @@ jobs:
         with:
           name: android
           path: staging/*
+          retention-days: 1
 
-  desktop:
-    name: Windows EXE (Tauri NSIS)
+  windows:
+    name: Windows EXE / CLI
+    needs: plan
+    if: needs.plan.outputs.windows == 'true'
     runs-on: windows-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -54,49 +147,55 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
-          workspaces: apps/desktop/src-tauri
+          workspaces: |
+            apps/desktop/src-tauri
+            apps/cli
+
       - name: Install workspace dependencies
+        if: needs.plan.outputs.desktop == 'true'
         run: pnpm install --frozen-lockfile
       - name: Build frontend
+        if: needs.plan.outputs.desktop == 'true'
         run: pnpm --filter @lexfield/desktop build
       - name: Build Tauri bundle (NSIS)
+        if: needs.plan.outputs.desktop == 'true'
         run: pnpm --filter @lexfield/desktop exec tauri build
-      - name: Collect artifacts
+      - name: Collect EXE artifact
+        if: needs.plan.outputs.desktop == 'true'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force staging | Out-Null
           Copy-Item apps/desktop/src-tauri/target/release/bundle/nsis/*.exe staging/
       - uses: actions/upload-artifact@v4
+        if: needs.plan.outputs.desktop == 'true'
         with:
           name: desktop
           path: staging/*
+          retention-days: 1
 
-  cli:
-    name: Windows CLI
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: apps/cli
       - name: Build CLI
+        if: needs.plan.outputs.cli == 'true'
         working-directory: apps/cli
-        run: cargo build --release
-      - name: Collect artifacts
+        run: cargo build --release --locked
+      - name: Collect CLI artifact
+        if: needs.plan.outputs.cli == 'true'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force staging | Out-Null
-          Copy-Item apps/cli/target/release/lexfield.exe staging/
+          New-Item -ItemType Directory -Force staging-cli | Out-Null
+          Copy-Item apps/cli/target/release/lexfield.exe staging-cli/
       - uses: actions/upload-artifact@v4
+        if: needs.plan.outputs.cli == 'true'
         with:
           name: cli
-          path: staging/*
+          path: staging-cli/*
+          retention-days: 1
 
   release:
     name: Publish GitHub Release
-    needs: [android, desktop, cli]
+    needs: [plan, android, windows]
+    if: always() && needs.plan.outputs.any == 'true' && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
@@ -107,6 +206,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          ls -la staging
           gh release create "${{ inputs.tag }}" staging/* \
             --title "LexField ${{ inputs.tag }}" \
             --generate-notes

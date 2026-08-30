@@ -58,11 +58,18 @@ Web 版 = SPA(静态资产)+ 同步 API(同一个 Worker),推送到 GitHub 后�
 `.github/workflows/release.yml` 为**手动触发**(workflow_dispatch):
 
 1. GitHub 仓库页 → Actions → **Release (Android / EXE / CLI)** → Run workflow
-2. 输入版本标签(如 `v0.1.0`)后运行,会自动:
-   - 编译 **Android APK**(debug 签名,可直接安装)
-   - 编译 **Windows EXE**(Tauri 2 NSIS 安装包)
-   - 编译 **CLI**(Windows x86_64)
-   - 发布 GitHub Release 并上传全部产物;Release 说明由 GitHub 自动生成(commit 列表 + 贡献者)
+2. 输入版本标签(如 `v0.1.0`)与构建范围后运行:
+   - **`auto`(默认)**:对比上个 release tag 以来的变更,**只重新编译有改动的产物**——例如只改了 Android 就只出 APK,其余不重复编译
+   - 也可强制指定 `android` / `desktop` / `cli` / `all`
+3. 编译完成后自动发布 GitHub Release 并上传产物;Release 说明由 GitHub 自动生成(commit 列表 + 贡献者)
+
+### Actions 计费优化(私有仓库按分钟计费:Linux 1x / Windows 2x)
+
+- 变更检测跑在最便宜的 Linux 运行器上,命中不了的产物整条流水线直接跳过
+- EXE 与 CLI 合并在**同一个** Windows 任务里,共享 Rust 工具链与构建缓存,省掉一整次 2x 运行器开销
+- 所有任务设 `timeout-minutes` 上限,防止异常挂起持续计费;中间 artifact 只保留 1 天(Release 中已有正式产物)
+- Rust/Gradle/pnpm 缓存跨运行复用:Windows 冷构建约 20 分钟,命中缓存后约 5–8 分钟
+- 提示:仓库转为 **public** 后 GitHub Actions 完全免费(注意词库数据的协议注意事项)
 
 ## 记忆算法(FSRS-6)
 
