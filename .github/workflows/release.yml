@@ -193,7 +193,13 @@ jobs:
   release:
     name: Publish GitHub Release
     needs: [plan, android, windows]
-    if: always() && needs.plan.outputs.any == 'true' && !contains(needs.*.result, 'failure')
+    # 任一产物编译成功就发布;单个组件失败只减量发布,不再阻塞整个 release
+    if: >-
+      always() &&
+      needs.plan.result == 'success' &&
+      needs.plan.outputs.any == 'true' &&
+      (needs.android.result == 'success' || needs.windows.result == 'success') &&
+      !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -202,11 +208,24 @@ jobs:
         with:
           path: staging
           merge-multiple: true
-      - name: Create release
+      - name: Notice partial release
+        if: needs.android.result != 'success' || needs.windows.result != 'success'
+        run: |
+          FAILED=""
+          [ "${{ needs.android.result }}" = "failure" ] && FAILED="$FAILED android"
+          [ "${{ needs.windows.result }}" = "failure" ] && FAILED="$FAILED windows-exe/cli"
+          echo "::warning::部分组件编译失败,本 Release 先发布成功产物。失败组件:${FAILED:-无} —— 修复后用相同 tag 重跑 workflow,产物会补传到同一 Release"
+      - name: Create or update release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
         run: |
           ls -la staging
-          gh release create "${{ inputs.tag }}" staging/* \
-            --title "LexField ${{ inputs.tag }}" \
-            --generate-notes
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "release $TAG 已存在,补传产物"
+            gh release upload "$TAG" staging/* --clobber
+          else
+            gh release create "$TAG" staging/* \
+              --title "LexField $TAG" \
+              --generate-notes
+          fi

@@ -178,10 +178,13 @@ object Questions {
         val (self, choice, multi) = settings.questionWeights
         val total = self + choice + multi
         if (total <= 0.0) return 0
-        var roll = rng.nextDouble() * total
-        if ((roll -= self) < 0) return 0
-        if ((roll -= choice) < 0) return 1
-        return 2
+        // assignments are statements in Kotlin - never put `-=` inside an if condition
+        val roll = rng.nextDouble() * total
+        return when {
+            roll < self -> 0
+            roll < self + choice -> 1
+            else -> 2
+        }
     }
 
     private fun sampleIdxes(n: Int, k: Int, rng: Random): List<Int> {
