@@ -6,6 +6,7 @@ node_modules/
 
 # local tooling (agent skills, not part of the product)
 .skills/
+.zcode/
 
 # env
 .env

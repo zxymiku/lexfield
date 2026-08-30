@@ -1,0 +1,41 @@
+{
+  "_comment": "Supplemental entries for membership words absent from ECDICT (modern/proper terms). Structure mirrors the emitted entry minus w/lv, which come from membership.",
+  "BBQ": {
+    "p": "ˌbiːbiːˈkjuː",
+    "s": [
+      { "pos": "n.", "cn": "烧烤野餐；烤肉架" },
+      { "pos": "vt.", "cn": "烤（肉）；把…整个烤" }
+    ]
+  },
+  "Celsius": {
+    "p": "ˈselsiəs",
+    "s": [
+      { "pos": "adj.", "cn": "摄氏的" },
+      { "pos": "n.", "cn": "摄氏温度（℃）" }
+    ]
+  },
+  "Homo": {
+    "p": "ˈhəʊməʊ",
+    "s": [
+      { "pos": "n.", "cn": "人（人属）；人类" }
+    ]
+  },
+  "Medicare": {
+    "p": "ˈmedɪkeə(r)",
+    "s": [
+      { "pos": "n.", "cn": "国家医疗保险制度（美国/加拿大/澳大利亚等）" }
+    ]
+  },
+  "Olympiad": {
+    "p": "əˈlɪmpiæd",
+    "s": [
+      { "pos": "n.", "cn": "奥林匹克运动会；奥运会选拔赛；（学科）竞赛" }
+    ]
+  },
+  "Olympics": {
+    "p": "əˈlɪmpɪks",
+    "s": [
+      { "pos": "n.", "cn": "奥林匹克运动会（奥运会）" }
+    ]
+  }
+}

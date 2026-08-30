@@ -1,0 +1,13 @@
+{
+  "name": "@lexfield/data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vocabulary data pipeline: official CET-4/6 outlines ∪ ECDICT (MIT) full definitions",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "csv-parse": "^5.6.0"
+  }
+}

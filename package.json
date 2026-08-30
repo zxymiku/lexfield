@@ -1,0 +1,15 @@
+{
+  "name": "lexfield",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CET-4/6 complete vocabulary trainer - FSRS-6, Endfield-style UI",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "data:build": "pnpm --filter @lexfield/data build",
+    "web:dev": "pnpm --filter @lexfield/web dev",
+    "web:build": "pnpm --filter @lexfield/web build"
+  }
+}

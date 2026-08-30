@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-08-30T18:17:42.471Z",
+  "sources": {
+    "cet4Outline": "https://raw.githubusercontent.com/hehonghui/en_dict/master/CET4_edited.txt",
+    "cet6Outline": "https://raw.githubusercontent.com/hehonghui/en_dict/master/CET6_edited.txt",
+    "endictCet4": "https://raw.githubusercontent.com/ismartcoding/endict/master/vocabulary/cet4.json",
+    "endictCet6": "https://raw.githubusercontent.com/ismartcoding/endict/master/vocabulary/cet6.json",
+    "ecdict": "https://raw.githubusercontent.com/skywind3000/ECDICT/master/ecdict.csv"
+  },
+  "counts": {
+    "entries": 8728,
+    "cet4Only": 2387,
+    "cet6Only": 2088,
+    "both": 4253,
+    "cet4Total": 6640,
+    "cet6Total": 6341,
+    "missingFromEcdict": 0
+  },
+  "missingFromEcdict": []
+}
