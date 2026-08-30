@@ -1,0 +1,13 @@
+# normalize line endings
+* text=auto eol=lf
+
+# binaries
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.zip binary
+*.7z binary
+*.apk binary
+*.jar binary
+*.keystore binary
