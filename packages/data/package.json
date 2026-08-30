@@ -7,6 +7,10 @@
   "scripts": {
     "build": "node scripts/build.mjs"
   },
+  "exports": {
+    "./vocab": "./dist/lexfield-vocab.json",
+    "./report": "./dist/report.json"
+  },
   "dependencies": {
     "csv-parse": "^5.6.0"
   }

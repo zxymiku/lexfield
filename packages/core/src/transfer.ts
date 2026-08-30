@@ -1,5 +1,5 @@
 import type { CardRecord, ReviewLogRecord, Settings } from './types'
-import { cardKeyOf } from './fsrs'
+import { cardKeyOf, deserializeCard } from './fsrs'
 import type { StorageAdapter } from './storage'
 
 export const EXPORT_VERSION = 1
@@ -51,7 +51,9 @@ export async function importData(
   await storage.putSettings(payload.settings)
   const local = await storage.allCards()
   const localKeys = new Map(local.map((c) => [cardKeyOf(c), c]))
-  for (const c of payload.cards) {
+  for (const raw of payload.cards) {
+    // JSON round-trips turn Date fields into ISO strings - revive them
+    const c: CardRecord = { ...raw, fsrs: deserializeCard(raw.fsrs) }
     const existing = localKeys.get(cardKeyOf(c))
     if (!existing || c.updatedAt > existing.updatedAt) {
       localKeys.set(cardKeyOf(c), c)
