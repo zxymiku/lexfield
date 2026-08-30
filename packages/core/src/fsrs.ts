@@ -88,3 +88,7 @@ export function deserializeCard(raw: Card): Card {
 export function cardKeyOf(c: { w: string; s: number | null }): string {
   return c.s === null ? `w:${c.w}` : `s:${c.w}:${c.s}`
 }
+
+// re-export ts-fsrs surface so consumers only need @lexfield/core
+export { State } from 'ts-fsrs'
+export type { Card, Grade, RecordLogItem, ReviewLog } from 'ts-fsrs'

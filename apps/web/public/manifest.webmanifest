@@ -1,0 +1,23 @@
+{
+  "name": "LexField 四六级词汇",
+  "short_name": "LexField",
+  "description": "四六级全量词汇记忆系统 - FSRS-6 算法,Endfield 风格",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2f2f0",
+  "theme_color": "#191919",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
