@@ -1,6 +1,7 @@
 package com.lexfield.app.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -13,7 +14,7 @@ import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.appwidget.clickable
+import androidx.glance.action.clickable
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -94,21 +95,23 @@ object WidgetWordSource {
 class WordWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = WidgetWordSource.pick(context)
+        // Glance 1.1.x only has the Intent-based actionStartActivity (class-based came in 1.2)
+        val openApp = Intent(context, MainActivity::class.java)
         provideContent {
-            WidgetContent(data)
+            WidgetContent(data, openApp)
         }
     }
 }
 
 @Composable
-private fun WidgetContent(data: WidgetWord) {
+private fun WidgetContent(data: WidgetWord, openApp: Intent) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(color(WidgetColors.Ink))
             .cornerRadius(14.dp)
             .padding(horizontal = 14.dp, vertical = 10.dp)
-            .clickable(actionStartActivity<MainActivity>()),
+            .clickable(actionStartActivity(openApp)),
         contentAlignment = Alignment.CenterStart,
     ) {
         Column {
