@@ -88,11 +88,15 @@ jobs:
             echo "android=$A"
             echo "desktop=$D"
             echo "cli=$C"
-            if [ "$A" = true ] || [ "$D" = true ] || [ "$C" = true ]; then
+            # the Windows runner only spins up when a Windows artifact is needed
+            if [ "$D" = true ] || [ "$C" = true ]; then
               echo "windows=true"
-              echo "any=true"
             else
               echo "windows=false"
+            fi
+            if [ "$A" = true ] || [ "$D" = true ] || [ "$C" = true ]; then
+              echo "any=true"
+            else
               echo "any=false"
             fi
           } >> "$GITHUB_OUTPUT"
@@ -101,6 +105,8 @@ jobs:
           echo "android  = ${{ steps.plan.outputs.android }}"
           echo "desktop  = ${{ steps.plan.outputs.desktop }}"
           echo "cli      = ${{ steps.plan.outputs.cli }}"
+          echo "windows  = ${{ steps.plan.outputs.windows }}"
+          echo "any      = ${{ steps.plan.outputs.any }}"
 
   android:
     name: Android APK
