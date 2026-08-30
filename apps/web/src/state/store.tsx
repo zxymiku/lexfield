@@ -25,6 +25,13 @@ import vocabData from '@lexfield/data/vocab'
 export const vocabFile = vocabData as VocabFileJson
 export const vocab = new JsonVocab(vocabFile)
 
+/** platform hook: desktop swaps in its SQLite adapter before mounting */
+type StorageFactory = () => StorageAdapter
+let storageFactory: StorageFactory = () => new IndexedDbStorage()
+export function setStorageFactory(factory: StorageFactory) {
+  storageFactory = factory
+}
+
 export interface Counts {
   due: number
   learning: number
@@ -84,7 +91,7 @@ export function computeCounts(
 }
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
-  const [storage] = useState<StorageAdapter>(() => new IndexedDbStorage())
+  const [storage] = useState<StorageAdapter>(storageFactory)
   const [runner] = useState<SessionRunner>(() => new SessionRunner(storage, vocab, DEFAULT_SETTINGS))
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS)
   const [booted, setBooted] = useState(false)
