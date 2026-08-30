@@ -125,16 +125,29 @@ export async function syncOnce(
   const sinceLogs = logs.filter((l) => l.at > lastSync)
   const settings = await storage.getSettings()
 
+  // never upload credentials
+  const { syncToken: _t, syncUrl: _u, ...shareableSettings } = settings
+
   const pushRes = await client.push({
     cards: sinceCards,
     logs: sinceLogs,
-    settings: settings.syncToken ? settings : undefined,
+    settings: settings.syncToken ? shareableSettings : undefined,
   })
 
   const pullRes = await client.pull(lastSync)
   if (pullRes.cards.length > 0) {
     const { merged, applied } = mergePulledCards(cards, pullRes.cards)
     if (applied > 0) await storage.putCards(merged)
+  }
+  // merge pulled settings but keep local credentials intact
+  if (pullRes.settings) {
+    const cur = await storage.getSettings()
+    await storage.putSettings({
+      ...cur,
+      ...pullRes.settings,
+      syncUrl: cur.syncUrl,
+      syncToken: cur.syncToken,
+    })
   }
   const serverTime = Math.max(pushRes.serverTime, pullRes.serverTime)
   await storage.putMeta('lastSyncAt', serverTime)
