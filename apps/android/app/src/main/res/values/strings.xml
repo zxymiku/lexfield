@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">LexField</string>
+    <string name="widget_label">LexField 难词卡</string>
+    <string name="widget_description">在桌面展示需要重点记忆的单词(困难分级或曾答错),每小时或每天更换</string>
 </resources>

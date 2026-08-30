@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lexfield.app.data.Settings
@@ -31,6 +32,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(settings: Settings, onUpdate: (Settings) -> Unit, scope: CoroutineScope) {
+    val context = LocalContext.current
     var s by remember(settings) { mutableStateOf(settings) }
     var syncUrl by remember { mutableStateOf(settings.syncUrl) }
     var syncUser by remember { mutableStateOf(settings.syncUser) }
@@ -169,8 +171,33 @@ fun SettingsScreen(settings: Settings, onUpdate: (Settings) -> Unit, scope: Coro
             }
         }
 
+        Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("桌面小组件", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("展示需要重点记忆的词:困难分级或曾答错(lapses ≥ 1)的单词", fontSize = 12.sp)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = s.widgetMode == "hourly",
+                        onClick = { s = s.copy(widgetMode = "hourly") },
+                        label = { Text("每小时一换") },
+                    )
+                    FilterChip(
+                        selected = s.widgetMode == "daily",
+                        onClick = { s = s.copy(widgetMode = "daily") },
+                        label = { Text("每天一换") },
+                    )
+                }
+            }
+        }
+
         Button(
-            onClick = { onUpdate(s) },
+            onClick = {
+                val modeChanged = s.widgetMode != settings.widgetMode
+                onUpdate(s)
+                if (modeChanged) {
+                    scope.launch { com.lexfield.app.widget.WordWidget().updateAll(context) }
+                }
+            },
             modifier = Modifier.fillMaxWidth(),
         ) { Text("保存设置") }
     }

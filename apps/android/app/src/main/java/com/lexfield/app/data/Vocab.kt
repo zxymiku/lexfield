@@ -90,6 +90,8 @@ data class Settings(
     var syncUrl: String = "",
     var syncToken: String = "",
     var syncUser: String = "",
+    /** desktop widget refresh: "hourly" | "daily" */
+    var widgetMode: String = "hourly",
 ) {
     fun retentionFor(tier: Tier): Double {
         val d = tierRetentionDelta
@@ -113,6 +115,7 @@ data class Settings(
         o.put("qwMulti", questionWeights.third)
         o.put("syncUrl", syncUrl)
         o.put("syncUser", syncUser)
+        o.put("widgetMode", widgetMode)
         return o.toString()
     }
 
@@ -132,6 +135,7 @@ data class Settings(
                 ),
                 syncUrl = o.optString("syncUrl", ""),
                 syncUser = o.optString("syncUser", ""),
+                widgetMode = o.optString("widgetMode", "hourly"),
                 syncToken = "",
             )
         }

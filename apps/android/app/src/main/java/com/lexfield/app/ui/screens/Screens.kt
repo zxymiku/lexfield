@@ -190,6 +190,11 @@ fun SessionScreen(
                                 gradeButton("记得", Rating.GOOD, Modifier.weight(1f)) { submitRating(it) }
                                 gradeButton("简单", Rating.EASY, Modifier.weight(1f)) { submitRating(it) }
                             }
+                            Text(
+                                "四键 = 这次回忆的质量(FSRS 评分);简单/中等/困难分级在「词库档案」详情里设置",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
                     is Question.Choice -> {
@@ -294,6 +299,7 @@ fun LibraryScreen(
     onDirty: () -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
+    var level by remember { mutableStateOf(0) } // 0=全部 1=四级 2=六级
     var cards by remember { mutableStateOf<List<Card>>(emptyList()) }
     var detail by remember { mutableStateOf<com.lexfield.app.data.VocabEntry?>(null) }
 
@@ -303,19 +309,32 @@ fun LibraryScreen(
     LaunchedEffect(Unit) { reload() }
 
     val cardByWord = cards.filter { it.senseIdx == null }.associateBy { it.word }
+    // LazyColumn virtualizes, so the FULL vocabulary can be listed here
     val filtered = vocab.all()
         .filter { query.isBlank() || it.w.lowercase().contains(query.trim().lowercase()) }
-        .take(200)
+        .filter { level == 0 || (it.lv and level) != 0 }
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("词库档案 ${vocab.size}", style = MaterialTheme.typography.headlineSmall)
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            placeholder = { Text("搜索单词…(前 200 条)") },
+            placeholder = { Text("搜索单词…") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
         )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(selected = level == 0, onClick = { level = 0 }, label = { Text("全部") })
+            FilterChip(selected = level == 1, onClick = { level = 1 }, label = { Text("四级") })
+            FilterChip(selected = level == 2, onClick = { level = 2 }, label = { Text("六级") })
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "共 ${filtered.size} 词",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.CenterVertically),
+            )
+        }
         LazyColumn(Modifier.fillMaxSize()) {
             items(filtered, key = { it.w }) { entry ->
                 val card = cardByWord[entry.w]

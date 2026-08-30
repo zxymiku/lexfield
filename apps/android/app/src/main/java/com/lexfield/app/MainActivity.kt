@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AppRoot(vocab: Vocab, store: Store, scope: CoroutineScope) {
     var screen by remember { mutableStateOf(Screen.TODAY) }
-    var settings by remember { mutableStateOf(Settings()) }
+    var settings by remember { mutableStateOf(loadSettings(store)) }
     var revision by remember { mutableStateOf(0) } // bump to recompute counts
 
     val counts = remember(screen, revision, settings) {
@@ -92,11 +92,15 @@ private fun AppRoot(vocab: Vocab, store: Store, scope: CoroutineScope) {
             Screen.STATS -> StatsScreen(store, vocab, settings)
             Screen.SETTINGS -> SettingsScreen(settings, onUpdate = {
                 settings = it
+                store.putMeta("settings", it.toJson())
                 revision++
             }, scope)
         }
     }
 }
+
+fun loadSettings(store: Store): Settings =
+    store.getMeta("settings")?.let { Settings.fromJson(it) } ?: Settings()
 
 data class Counts(
     val due: Int,
