@@ -138,7 +138,7 @@ fn vocab_scope_entries<'a>(vocab: &'a Vocab, settings: &crate::store::AppSetting
 // ---------------------------------------------------------------------------
 
 pub enum Question {
-    SelfGrade(usize, Vec<(usize, Sense)>),
+    SelfGrade(Vec<(usize, Sense)>),
     Choice(usize, usize, Vec<ChoiceOption>),
     Multi(usize, Vec<usize>, Vec<ChoiceOption>),
 }
@@ -147,10 +147,9 @@ pub enum Question {
 pub struct ChoiceOption {
     pub text: String,
     pub correct: bool,
-    pub sense_idx: usize,
 }
 
-pub fn generate_question(item: &Item, store: &Store, vocab: &Vocab) -> Question {
+pub fn generate_question(item: &Item, _store: &Store, vocab: &Vocab) -> Question {
     let entry = item.entry(vocab);
     let mut rng = rand::thread_rng();
     let (self_w, choice_w, multi_w) = (0.4, 0.4, 0.2);
@@ -166,10 +165,7 @@ pub fn generate_question(item: &Item, store: &Store, vocab: &Vocab) -> Question 
     match kind {
         0 => {
             let idxes: Vec<usize> = (0..entry.s.len()).collect();
-            Question::SelfGrade(
-                vocab.index_of(&entry.w).unwrap(),
-                idxes.into_iter().map(|i| (i, entry.s[i].clone())).collect(),
-            )
+            Question::SelfGrade(idxes.into_iter().map(|i| (i, entry.s[i].clone())).collect())
         }
         1 => {
             let target = rng.gen_range(0..entry.s.len());
@@ -226,8 +222,7 @@ fn sample_options(
         .map(|&i| ChoiceOption {
             text: entry.sense_text(i),
             correct: true,
-            sense_idx: i,
-        })
+            })
         .collect();
     for &(vi, si) in pool.iter() {
         if options.len() >= total_options.max(correct_count) {
@@ -241,8 +236,7 @@ fn sample_options(
         options.push(ChoiceOption {
             text: e.sense_text(si),
             correct: false,
-            sense_idx: si,
-        });
+            });
     }
     // ensure distractor count
     options.truncate((correct_count + (total_options - correct_count)).max(options.len().min(total_options)));
@@ -253,7 +247,7 @@ fn sample_options(
 /// auto-grade a choice/multi answer -> (rating 1-4, tested sense indexes)
 pub fn grade_answer(q: &Question, selected: &[usize]) -> (u8, Vec<usize>) {
     match q {
-        Question::SelfGrade(_, _) => unreachable!("self questions grade directly"),
+        Question::SelfGrade(_) => unreachable!("self questions grade directly"),
         Question::Choice(_, target, _) => {
             let correct = selected.len() == 1 && q_options(q)[selected[0]].correct;
             (if correct { 3 } else { 1 }, vec![*target])
@@ -279,7 +273,7 @@ pub fn grade_answer(q: &Question, selected: &[usize]) -> (u8, Vec<usize>) {
 fn q_options(q: &Question) -> &Vec<ChoiceOption> {
     match q {
         Question::Choice(_, _, o) | Question::Multi(_, _, o) => o,
-        Question::SelfGrade(_, _) => unreachable!(),
+        Question::SelfGrade(_) => unreachable!(),
     }
 }
 

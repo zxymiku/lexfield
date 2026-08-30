@@ -284,6 +284,7 @@ private fun gradeButton(label: String, rating: Rating, modifier: Modifier, onGra
    Library screen - search + list + detail sheet (per-sense tiers)
    ========================================================================== */
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
     vocab: Vocab,

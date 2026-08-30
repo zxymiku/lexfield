@@ -7,11 +7,13 @@ import com.lexfield.app.data.Store
 import com.lexfield.app.data.Vocab
 import com.lexfield.app.data.VocabEntry
 import com.lexfield.app.fsrs.CardState
+import com.lexfield.app.fsrs.FsrsParams
 import com.lexfield.app.fsrs.Fsrs
 import com.lexfield.app.fsrs.Rating
 import com.lexfield.app.fsrs.Tier
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.random.Random
 
 const val MINUTE: Long = 60_000L
@@ -47,8 +49,8 @@ object Queue {
         newIntroducedToday: Int,
     ): List<Item> {
         val seen = HashSet<String>()
-        val learning = ArrayList<Item>()
-        val due = ArrayList<Item>()
+        val learning = ArrayList<Item.Learning>()
+        val due = ArrayList<Item.Due>()
         for (c in cards) {
             if (c.suspended || c.senseIdx != null) continue
             seen.add(c.word)
@@ -184,10 +186,7 @@ object Questions {
 
     private fun sampleIdxes(n: Int, k: Int, rng: Random): List<Int> {
         val all = (0 until n).toMutableList()
-        for (i in 0 until minOf(k, all.size)) {
-            val j = i + rng.nextInt(all.size - i)
-            val t = all[i]; all[i] = all[j]; all[j] = t
-        }
+        all.shuffle(rng)
         return all.take(k)
     }
 
